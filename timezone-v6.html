@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Zone Display</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+        
+        body.light-mode {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+        
+        body.blue-mode {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.5s ease;
+        }
+        
+        .light-mode .container {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .blue-mode .container {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 10px 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+        
+        .header-btn:active {
+            transform: translateY(0);
+        }
+        
+        .top-zone {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+        }
+        
+        .light-mode .top-zone {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .blue-mode .top-zone {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .main-zone {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: all 0.5s ease;
+        }
+        
+        .light-mode .main-zone {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .blue-mode .main-zone {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .main-zone.live-mode {
+            animation: livePulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes livePulse {
+            0%, 100% {
+                border-color: rgba(255, 255, 255, 0.3);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            50% {
+                border-color: rgba(76, 175, 80, 0.8);
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.1);
+            }
+        }
+        
+        .time-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .arrow-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+            color: white;
+            user-select: none;
+        }
+        
+        .arrow-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .arrow-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .timezone-label {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .main-zone .timezone-label {
+            font-size: 24px;
+        }
+        
+        .time-display {
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .time-display:hover {
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+        }
+        
+        .time-input {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            width: 120px;
+            outline: none;
+        }
+        
+        .time-input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        .main-zone .time-display {
+            font-size: 36px;
+            margin-top: 10px;
+        }
+        
+        /* COUNTRIES GRID - CRITICAL CSS */
+        .bottom-zones {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .bottom-zone {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+        }
+        
+        .light-mode .bottom-zone {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .blue-mode .bottom-zone {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .bottom-zone .time-display {
+            font-size: 20px;
+        }
+        
+        .country-name {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .copyright a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .copyright a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        .usage-stats {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            display: none;
+            font-weight: bold;
+            font-size: 14px;
+            max-width: 280px;
+            min-width: 200px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .notification.show {
+            display: block;
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        .notification.hide {
+            animation: slideOut 0.5s ease-out forwards;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+        }
+        
+        .help-modal, .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .help-content, .settings-content {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .light-mode .help-content, .light-mode .settings-content {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+        
+        .blue-mode .help-content, .blue-mode .settings-content {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        
+        .help-close, .settings-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .help-close:hover, .settings-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .help-title, .settings-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+        
+        .help-section {
+            margin-bottom: 20px;
+        }
+        
+        .help-section h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            border-left: 3px solid rgba(255, 255, 255, 0.5);
+            padding-left: 10px;
+        }
+        
+        .help-section p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .help-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #4CAF50;
+            margin: 5px 0;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .try-link {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            cursor: pointer;
+        }
+        
+        .try-link:hover {
+            background: rgba(76, 175, 80, 0.3);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .help-examples {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        /* Settings Styles */
+        .settings-countries-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        
+        .settings-countries-list h3 {
+            margin-top: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .countries-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .country-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: move;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            user-select: none;
+        }
+        
+        .country-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .country-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .country-item.drag-over {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .country-item.available {
+            cursor: pointer;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .country-item.available:hover {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+        
+        .drag-handle {
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 10px;
+            cursor: move;
+            font-size: 18px;
+        }
+        
+        .country-label {
+            flex: 1;
+            font-size: 14px;
+            color: white;
+        }
+        
+        .remove-country {
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-country:hover {
+            background: rgba(255, 0, 0, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .add-country {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .add-country:hover {
+            background: rgba(76, 175, 80, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .settings-btn.primary {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+        
+        .settings-btn.primary:hover {
+            background: rgba(76, 175, 80, 0.5);
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            margin: 20px 0;
+        }
+        
+        .section-separator {
+            margin: 30px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* MOBILE STYLES */
+        @media (max-width: 768px) {
+            .theme-toggle {
+                position: fixed;
+                top: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 255, 255, 0.3);
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                padding: 8px;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            
+            .container {
+                padding: 15px;
+                margin: 0;
+                max-width: 100%;
+                width: calc(100% - 20px);
+                padding-top: 15px;
+            }
+            
+            .header-buttons {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 8px;
+                margin-bottom: 20px;
+                flex-wrap: nowrap;
+                margin-top: 10px;
+            }
+            
+            .header-btn {
+                flex: 1;
+                padding: 10px 12px;
+                font-size: 12px;
+                min-width: 0;
+                white-space: nowrap;
+                border-radius: 20px;
+            }
+            
+            /* MOBILE COUNTRIES - 2 COLUMNS */
+            .bottom-zones {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .bottom-zone {
+                padding: 12px;
+            }
+            
+            .main-zone {
+                transform: scale(1);
+                gap: 10px;
+                margin: 20px 0;
+                padding: 20px;
+            }
+            
+            .arrow-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .time-display {
+                font-size: 20px;
+            }
+            
+            .main-zone .time-display {
+                font-size: 28px;
+            }
+            
+            .notification {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                top: 70px;
+                margin: 0 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">🌛</div>
+    
+    <div class="container">
+        <div class="header-buttons">
+            <div class="header-btn" onclick="shareToTwitter()">SHARE</div>
+            <div class="header-btn" onclick="resetToCurrentTime()">RESET</div>
+            <div class="header-btn" onclick="showSettings()">⚙️</div>
+            <div class="header-btn" onclick="showHelp()">HELP</div>
+        </div>
+        
+        <!-- Fixed EDT Top Zone -->
+        <div class="top-zone">
+            <div class="timezone-label">🇺🇸 EDT</div>
+            <div class="time-display" id="edt-time">9:00 PM</div>
+            <div class="country-name" id="edt-date">Wed, Jul 9</div>
+        </div>
+        
+        <!-- Fixed PDT Main Zone -->
+        <div class="main-zone">
+            <div class="arrow-btn" onclick="decrementTime()">−</div>
+            <div class="time-controls">
+                <div class="timezone-label">🇺🇸 PDT</div>
+                <div class="time-display" id="pdt-time" onclick="editTime(this)">6:00 PM</div>
+                <div class="country-name" id="pdt-date">Wed, Jul 9</div>
+            </div>
+            <div class="arrow-btn" onclick="incrementTime()">+</div>
+        </div>
+        
+        <!-- Dynamic Bottom Countries -->
+        <div class="bottom-zones" id="bottom-zones">
+            <!-- Dynamic countries will be rendered here -->
+        </div>
+        
+        <div class="copyright">
+            Copyright © <span id="current-year"></span> <a href="https://evoknow.com" target="_blank">EVOKNOW</a> | <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+        </div>
+        
+        <div class="usage-stats" id="usage-stats">
+            Loading usage stats...
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Help Modal -->
+    <div class="help-modal" id="help-modal">
+        <div class="help-content">
+            <button class="help-close" onclick="closeHelp()">×</button>
+            <div class="help-title">🌍 Timezone Display Help</div>
+            
+            <div class="help-section">
+                <h3>🔗 URL Parameters</h3>
+                <p>You can set a specific date and time using URL parameters:</p>
+                <div class="help-examples">
+                    <p><strong>Time only (uses today's date):</strong></p>
+                    <div class="help-code">
+                        <span>?time=7am</span>
+                        <a class="try-link" onclick="tryExample('?time=7am')">Try</a>
+                    </div>
+                    <div class="help-code">
+                        <span>?time=6:30pm</span>
+                        <a class="try-link" onclick="tryExample('?time=6:30pm')">Try</a>
+                    </div>
+                    <div class="help-code">
+                        <span>?time=12:00PM</span>
+                        <a class="try-link" onclick="tryExample('?time=12:00PM')">Try</a>
+                    </div>
+                    
+                    <p><strong>Date and time:</strong></p>
+                    <div class="help-code">
+                        <span>?date=07-10-2025&time=6:00pm</span>
+                        <a class="try-link" onclick="tryExample('?date=07-10-2025&time=6:00pm')">Try</a>
+                    </div>
+                    <div class="help-code">
+                        <span>?date=12/25/2025&time=9am</span>
+                        <a class="try-link" onclick="tryExample('?date=12/25/2025&time=9am')">Try</a>
+                    </div>
+                    <div class="help-code">
+                        <span>?date=01-01-2026&time=11:30PM</span>
+                        <a class="try-link" onclick="tryExample('?date=01-01-2026&time=11:30PM')">Try</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>🔄 RESET Button</h3>
+                <p>• Sets time to current date and time</p>
+                <p>• Enables automatic updates every minute</p>
+                <p>• Shows green pulsing border when live</p>
+            </div>
+
+            <div class="help-section">
+                <h3>⏰ Time Controls</h3>
+                <p><strong>Arrow Buttons:</strong></p>
+                <p>• <strong>− (minus)</strong>: Go back to nearest 5-minute mark</p>
+                <p>• <strong>+ (plus)</strong>: Go forward to nearest 5-minute mark</p>
+                <p>• Example: 6:23 PM → 6:20 PM (−) or 6:25 PM (+)</p>
+                
+                <p><strong>Click to Edit:</strong></p>
+                <p>• Click on PDT time to edit directly</p>
+                <p>• Press Enter to save, Escape to cancel</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🎨 Theme Modes</h3>
+                <p>Click the theme button (🌛/☀️/🌙) to cycle through:</p>
+                <p>• <strong>Dark Mode</strong> (default): Dark gray gradient</p>
+                <p>• <strong>Light Mode</strong>: Bright blue gradient</p>
+                <p>• <strong>Blue Mode</strong>: Classic blue gradient</p>
+            </div>
+
+            <div class="help-section">
+                <h3>⚙️ Settings</h3>
+                <p>• Click the gear icon to customize bottom countries</p>
+                <p>• Drag and drop to reorder countries</p>
+                <p>• Add/remove countries from the list</p>
+                <p>• Your selections are saved automatically</p>
+            </div>
+
+            <div class="help-section">
+                <h3>📸 Sharing</h3>
+                <p>• SHARE button captures current theme</p>
+                <p>• Copies image to clipboard automatically</p>
+                <p>• Opens Twitter/X composer for posting</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-content">
+            <button class="settings-close" onclick="closeSettings()">×</button>
+            <div class="settings-title">⚙️ Customize Bottom Countries</div>
+            <p style="text-align: center; color: rgba(255, 255, 255, 0.8); margin-bottom: 20px;">
+                EDT (top) and PDT (middle) are fixed. Changes are saved automatically.
+            </p>
+            
+            <div class="settings-countries-list">
+                <h3>Bottom Countries (drag to reorder)</h3>
+                <div class="countries-container" id="selected-countries">
+                    <!-- Selected countries will be populated here -->
+                </div>
+            </div>
+            
+            <div class="section-separator"></div>
+            
+            <div class="settings-countries-list">
+                <h3>Available Countries (click + to add)</h3>
+                <div class="countries-container" id="available-countries">
+                    <!-- Available countries will be populated here -->
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="settings-btn" onclick="resetToDefaults()">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Countries with their timezone offsets from UTC
+        const COUNTRIES = [
+            { code: 'BD', name: 'Bangladesh', flag: '🇧🇩', offset: 6, label: 'BD' },
+            { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', offset: 1, label: 'UK' },
+            { code: 'DE', name: 'Germany', flag: '🇩🇪', offset: 2, label: 'DE' },
+            { code: 'ZA', name: 'South Africa', flag: '🇿🇦', offset: 2, label: 'ZA' },
+            { code: 'CA', name: 'Canada (EDT)', flag: '🇨🇦', offset: -4, label: 'CA' },
+            { code: 'AU', name: 'Australia (Sydney)', flag: '🇦🇺', offset: 10, label: 'AU' },
+            { code: 'JP', name: 'Japan', flag: '🇯🇵', offset: 9, label: 'JP' },
+            { code: 'CN', name: 'China', flag: '🇨🇳', offset: 8, label: 'CN' },
+            { code: 'IN', name: 'India', flag: '🇮🇳', offset: 5.5, label: 'IN' },
+            { code: 'BR', name: 'Brazil', flag: '🇧🇷', offset: -3, label: 'BR' },
+            { code: 'MX', name: 'Mexico', flag: '🇲🇽', offset: -6, label: 'MX' },
+            { code: 'RU', name: 'Russia (Moscow)', flag: '🇷🇺', offset: 3, label: 'RU' },
+            { code: 'FR', name: 'France', flag: '🇫🇷', offset: 2, label: 'FR' },
+            { code: 'ES', name: 'Spain', flag: '🇪🇸', offset: 2, label: 'ES' },
+            { code: 'IT', name: 'Italy', flag: '🇮🇹', offset: 2, label: 'IT' },
+            { code: 'KR', name: 'South Korea', flag: '🇰🇷', offset: 9, label: 'KR' },
+            { code: 'SG', name: 'Singapore', flag: '🇸🇬', offset: 8, label: 'SG' },
+            { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', offset: 12, label: 'NZ' },
+            { code: 'AE', name: 'UAE', flag: '🇦🇪', offset: 4, label: 'UAE' },
+            { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', offset: 3, label: 'SA' },
+            { code: 'EG', name: 'Egypt', flag: '🇪🇬', offset: 2, label: 'EG' },
+            { code: 'NG', name: 'Nigeria', flag: '🇳🇬', offset: 1, label: 'NG' },
+            { code: 'AR', name: 'Argentina', flag: '🇦🇷', offset: -3, label: 'AR' },
+            { code: 'CO', name: 'Colombia', flag: '🇨🇴', offset: -5, label: 'CO' },
+            { code: 'CL', name: 'Chile', flag: '🇨🇱', offset: -3, label: 'CL' },
+            { code: 'PE', name: 'Peru', flag: '🇵🇪', offset: -5, label: 'PE' },
+            { code: 'VE', name: 'Venezuela', flag: '🇻🇪', offset: -4, label: 'VE' },
+            { code: 'MY', name: 'Malaysia', flag: '🇲🇾', offset: 8, label: 'MY' },
+            { code: 'TH', name: 'Thailand', flag: '🇹🇭', offset: 7, label: 'TH' },
+            { code: 'VN', name: 'Vietnam', flag: '🇻🇳', offset: 7, label: 'VN' },
+            { code: 'PH', name: 'Philippines', flag: '🇵🇭', offset: 8, label: 'PH' },
+            { code: 'ID', name: 'Indonesia', flag: '🇮🇩', offset: 7, label: 'ID' },
+            { code: 'PK', name: 'Pakistan', flag: '🇵🇰', offset: 5, label: 'PK' },
+            { code: 'TR', name: 'Turkey', flag: '🇹🇷', offset: 3, label: 'TR' },
+            { code: 'IR', name: 'Iran', flag: '🇮🇷', offset: 3.5, label: 'IR' },
+            { code: 'IQ', name: 'Iraq', flag: '🇮🇶', offset: 3, label: 'IQ' },
+            { code: 'IL', name: 'Israel', flag: '🇮🇱', offset: 3, label: 'IL' },
+            { code: 'GR', name: 'Greece', flag: '🇬🇷', offset: 3, label: 'GR' },
+            { code: 'PT', name: 'Portugal', flag: '🇵🇹', offset: 1, label: 'PT' },
+            { code: 'NL', name: 'Netherlands', flag: '🇳🇱', offset: 2, label: 'NL' },
+            { code: 'BE', name: 'Belgium', flag: '🇧🇪', offset: 2, label: 'BE' },
+            { code: 'CH', name: 'Switzerland', flag: '🇨🇭', offset: 2, label: 'CH' },
+            { code: 'AT', name: 'Austria', flag: '🇦🇹', offset: 2, label: 'AT' },
+            { code: 'SE', name: 'Sweden', flag: '🇸🇪', offset: 2, label: 'SE' },
+            { code: 'NO', name: 'Norway', flag: '🇳🇴', offset: 2, label: 'NO' },
+            { code: 'DK', name: 'Denmark', flag: '🇩🇰', offset: 2, label: 'DK' },
+            { code: 'FI', name: 'Finland', flag: '🇫🇮', offset: 3, label: 'FI' },
+            { code: 'PL', name: 'Poland', flag: '🇵🇱', offset: 2, label: 'PL' },
+            { code: 'UA', name: 'Ukraine', flag: '🇺🇦', offset: 3, label: 'UA' },
+            { code: 'RO', name: 'Romania', flag: '🇷🇴', offset: 3, label: 'RO' },
+            { code: 'HU', name: 'Hungary', flag: '🇭🇺', offset: 2, label: 'HU' },
+            { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿', offset: 2, label: 'CZ' },
+            { code: 'SK', name: 'Slovakia', flag: '🇸🇰', offset: 2, label: 'SK' },
+            { code: 'BG', name: 'Bulgaria', flag: '🇧🇬', offset: 3, label: 'BG' },
+            { code: 'HR', name: 'Croatia', flag: '🇭🇷', offset: 2, label: 'HR' },
+            { code: 'RS', name: 'Serbia', flag: '🇷🇸', offset: 2, label: 'RS' },
+            { code: 'SI', name: 'Slovenia', flag: '🇸🇮', offset: 2, label: 'SI' },
+            { code: 'BA', name: 'Bosnia', flag: '🇧🇦', offset: 2, label: 'BA' },
+            { code: 'MK', name: 'North Macedonia', flag: '🇲🇰', offset: 2, label: 'MK' },
+            { code: 'AL', name: 'Albania', flag: '🇦🇱', offset: 2, label: 'AL' },
+            { code: 'KE', name: 'Kenya', flag: '🇰🇪', offset: 3, label: 'KE' },
+            { code: 'ET', name: 'Ethiopia', flag: '🇪🇹', offset: 3, label: 'ET' },
+            { code: 'GH', name: 'Ghana', flag: '🇬🇭', offset: 0, label: 'GH' },
+            { code: 'MA', name: 'Morocco', flag: '🇲🇦', offset: 1, label: 'MA' },
+            { code: 'DZ', name: 'Algeria', flag: '🇩🇿', offset: 1, label: 'DZ' },
+            { code: 'TN', name: 'Tunisia', flag: '🇹🇳', offset: 1, label: 'TN' },
+            { code: 'LY', name: 'Libya', flag: '🇱🇾', offset: 2, label: 'LY' },
+            { code: 'SD', name: 'Sudan', flag: '🇸🇩', offset: 2, label: 'SD' },
+            { code: 'UG', name: 'Uganda', flag: '🇺🇬', offset: 3, label: 'UG' },
+            { code: 'TZ', name: 'Tanzania', flag: '🇹🇿', offset: 3, label: 'TZ' },
+            { code: 'AO', name: 'Angola', flag: '🇦🇴', offset: 1, label: 'AO' },
+            { code: 'MZ', name: 'Mozambique', flag: '🇲🇿', offset: 2, label: 'MZ' },
+            { code: 'ZW', name: 'Zimbabwe', flag: '🇿🇼', offset: 2, label: 'ZW' },
+            { code: 'BW', name: 'Botswana', flag: '🇧🇼', offset: 2, label: 'BW' },
+            { code: 'NA', name: 'Namibia', flag: '🇳🇦', offset: 2, label: 'NA' },
+            { code: 'MG', name: 'Madagascar', flag: '🇲🇬', offset: 3, label: 'MG' },
+            { code: 'MU', name: 'Mauritius', flag: '🇲🇺', offset: 4, label: 'MU' },
+            { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', offset: 8, label: 'HK' },
+            { code: 'TW', name: 'Taiwan', flag: '🇹🇼', offset: 8, label: 'TW' },
+            { code: 'MN', name: 'Mongolia', flag: '🇲🇳', offset: 8, label: 'MN' },
+            { code: 'NP', name: 'Nepal', flag: '🇳🇵', offset: 5.75, label: 'NP' },
+            { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', offset: 5.5, label: 'LK' },
+            { code: 'MM', name: 'Myanmar', flag: '🇲🇲', offset: 6.5, label: 'MM' },
+            { code: 'KH', name: 'Cambodia', flag: '🇰🇭', offset: 7, label: 'KH' },
+            { code: 'LA', name: 'Laos', flag: '🇱🇦', offset: 7, label: 'LA' },
+            { code: 'BN', name: 'Brunei', flag: '🇧🇳', offset: 8, label: 'BN' },
+            { code: 'PG', name: 'Papua New Guinea', flag: '🇵🇬', offset: 10, label: 'PG' },
+            { code: 'FJ', name: 'Fiji', flag: '🇫🇯', offset: 12, label: 'FJ' },
+            { code: 'IS', name: 'Iceland', flag: '🇮🇸', offset: 0, label: 'IS' },
+            { code: 'IE', name: 'Ireland', flag: '🇮🇪', offset: 1, label: 'IE' },
+            { code: 'CU', name: 'Cuba', flag: '🇨🇺', offset: -5, label: 'CU' },
+            { code: 'JM', name: 'Jamaica', flag: '🇯🇲', offset: -5, label: 'JM' },
+            { code: 'HT', name: 'Haiti', flag: '🇭🇹', offset: -5, label: 'HT' },
+            { code: 'DO', name: 'Dominican Republic', flag: '🇩🇴', offset: -4, label: 'DO' },
+            { code: 'GT', name: 'Guatemala', flag: '🇬🇹', offset: -6, label: 'GT' },
+            { code: 'CR', name: 'Costa Rica', flag: '🇨🇷', offset: -6, label: 'CR' },
+            { code: 'PA', name: 'Panama', flag: '🇵🇦', offset: -5, label: 'PA' },
+            { code: 'EC', name: 'Ecuador', flag: '🇪🇨', offset: -5, label: 'EC' },
+            { code: 'BO', name: 'Bolivia', flag: '🇧🇴', offset: -4, label: 'BO' },
+            { code: 'PY', name: 'Paraguay', flag: '🇵🇾', offset: -3, label: 'PY' },
+            { code: 'UY', name: 'Uruguay', flag: '🇺🇾', offset: -3, label: 'UY' }
+        ];
+
+        // Fixed timezones (not customizable)
+        const FIXED_TIMEZONES = {
+            EDT: { code: 'US-EDT', name: 'USA (EDT)', flag: '🇺🇸', offset: -4, label: 'EDT' },
+            PDT: { code: 'US-PDT', name: 'USA (PDT)', flag: '🇺🇸', offset: -7, label: 'PDT' }
+        };
+
+        // Default bottom countries
+        const DEFAULT_BOTTOM_COUNTRIES = ['BD', 'GB', 'DE', 'ZA', 'CA', 'AU'];
+
+        // Current selected bottom countries (ordered)
+        let selectedBottomCountries = [];
+
+        // Load saved countries from localStorage
+        function loadSelectedCountries() {
+            const saved = localStorage.getItem('timezone-bottom-countries');
+            if (saved) {
+                try {
+                    selectedBottomCountries = JSON.parse(saved);
+                } catch (e) {
+                    selectedBottomCountries = [...DEFAULT_BOTTOM_COUNTRIES];
+                }
+            } else {
+                selectedBottomCountries = [...DEFAULT_BOTTOM_COUNTRIES];
+            }
+        }
+
+        // Save selected countries to localStorage
+        function saveSelectedCountries() {
+            localStorage.setItem('timezone-bottom-countries', JSON.stringify(selectedBottomCountries));
+        }
+
+        // Populate settings modal
+        function populateSettings() {
+            const selectedContainer = document.getElementById('selected-countries');
+            const availableContainer = document.getElementById('available-countries');
+            
+            // Clear containers
+            selectedContainer.innerHTML = '';
+            availableContainer.innerHTML = '';
+            
+            // Populate selected countries (with drag and drop)
+            if (selectedBottomCountries.length === 0) {
+                selectedContainer.innerHTML = '<div class="empty-message">No countries selected. Add some from the available list below.</div>';
+            } else {
+                selectedBottomCountries.forEach(code => {
+                    const country = COUNTRIES.find(c => c.code === code);
+                    if (!country) return;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'country-item';
+                    item.draggable = true;
+                    item.dataset.code = code;
+                    item.innerHTML = `
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="country-label">${country.flag} ${country.name}</div>
+                        <div class="remove-country" onclick="removeCountry('${code}')">×</div>
+                    `;
+                    
+                    // Add drag event listeners
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('drop', handleDrop);
+                    
+                    selectedContainer.appendChild(item);
+                });
+            }
+            
+            // Populate available countries
+            COUNTRIES.forEach(country => {
+                if (selectedBottomCountries.includes(country.code)) return;
+                
+                const item = document.createElement('div');
+                item.className = 'country-item available';
+                item.innerHTML = `
+                    <div class="country-label">${country.flag} ${country.name}</div>
+                    <div class="add-country" onclick="addCountry('${country.code}')">+</div>
+                `;
+                
+                availableContainer.appendChild(item);
+            });
+        }
+
+        // Drag and drop functionality
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedElement = null;
+            
+            // Clean up any drag-over styling
+            document.querySelectorAll('.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            
+            e.dataTransfer.dropEffect = 'move';
+            
+            // Add visual feedback
+            if (this !== draggedElement) {
+                this.classList.add('drag-over');
+            }
+            
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            if (draggedElement !== this) {
+                // Get the codes
+                const draggedCode = draggedElement.dataset.code;
+                const targetCode = this.dataset.code;
+                
+                // Find indices
+                const draggedIndex = selectedBottomCountries.indexOf(draggedCode);
+                const targetIndex = selectedBottomCountries.indexOf(targetCode);
+                
+                // Reorder array
+                selectedBottomCountries.splice(draggedIndex, 1);
+                selectedBottomCountries.splice(targetIndex, 0, draggedCode);
+                
+                // Refresh the display
+                populateSettings();
+                
+                // Auto-save and update display
+                saveSelectedCountries();
+                renderBottomCountries();
+                updateAllTimes();
+                
+                console.log('Reordered countries:', selectedBottomCountries);
+            }
+            
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        // Add country to selection
+        function addCountry(code) {
+            selectedBottomCountries.push(code);
+            populateSettings();
+            
+            // Auto-save and update display
+            saveSelectedCountries();
+            renderBottomCountries();
+            updateAllTimes();
+        }
+
+        // Remove country from selection
+        function removeCountry(code) {
+            selectedBottomCountries = selectedBottomCountries.filter(c => c !== code);
+            populateSettings();
+            
+            // Auto-save and update display
+            saveSelectedCountries();
+            renderBottomCountries();
+            updateAllTimes();
+        }
+
+        // Show settings modal
+        function showSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = 'flex';
+            populateSettings();
+        }
+
+        // Close settings modal
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        // This function is no longer needed as all changes are auto-saved
+        // function saveSettings() {
+        //     saveSelectedCountries();
+        //     renderBottomCountries();
+        //     updateAllTimes();
+        //     closeSettings();
+        //     showNotification('Settings saved successfully!');
+        // }
+
+        // Reset to defaults
+        function resetToDefaults() {
+            selectedBottomCountries = [...DEFAULT_BOTTOM_COUNTRIES];
+            populateSettings();
+            
+            // Auto-save and update display
+            saveSelectedCountries();
+            renderBottomCountries();
+            updateAllTimes();
+            
+            showNotification('Reset to default countries');
+        }
+
+        // Render bottom countries based on selection
+        function renderBottomCountries() {
+            const container = document.getElementById('bottom-zones');
+            
+            // Get selected country objects in order
+            const selectedCountryObjects = selectedBottomCountries.map(code => 
+                COUNTRIES.find(c => c.code === code)
+            ).filter(Boolean);
+            
+            container.innerHTML = selectedCountryObjects.map(country => `
+                <div class="bottom-zone">
+                    <div class="timezone-label">${country.flag} ${country.label}</div>
+                    <div class="time-display" id="${country.code}-time">8:00 AM</div>
+                    <div class="country-name" id="${country.code}-date">Thu, Jul 10</div>
+                </div>
+            `).join('');
+        }
+
+        // Usage tracking
+        let sessionStartTime = Date.now();
+        let totalActiveTime = 0;
+        let isPageVisible = true;
+        let visibilityStartTime = Date.now();
+        
+        function initializeUsageTracking() {
+            // Track page loads
+            let pageLoads = parseInt(localStorage.getItem('timezone-page-loads') || '0');
+            pageLoads++;
+            localStorage.setItem('timezone-page-loads', pageLoads.toString());
+            
+            // Get total time from previous sessions
+            totalActiveTime = parseInt(localStorage.getItem('timezone-total-time') || '0');
+            
+            console.log('Usage tracking initialized. Page loads:', pageLoads, 'Total time:', totalActiveTime);
+            
+            updateUsageDisplay();
+            
+            // Start tracking visibility
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            // Update time every 10 seconds when visible
+            setInterval(() => {
+                if (isPageVisible) {
+                    updateActiveTime();
+                    updateUsageDisplay();
+                }
+            }, 10000);
+            
+            // Save time when page unloads
+            window.addEventListener('beforeunload', saveActiveTime);
+        }
+        
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                // Page became hidden - save current session time
+                if (isPageVisible) {
+                    updateActiveTime();
+                    saveActiveTime();
+                    isPageVisible = false;
+                }
+            } else {
+                // Page became visible - start new session
+                isPageVisible = true;
+                visibilityStartTime = Date.now();
+            }
+        }
+        
+        function updateActiveTime() {
+            if (isPageVisible) {
+                const currentTime = Date.now();
+                const sessionTime = currentTime - visibilityStartTime;
+                totalActiveTime += sessionTime;
+                visibilityStartTime = currentTime;
+            }
+        }
+        
+        function saveActiveTime() {
+            updateActiveTime();
+            localStorage.setItem('timezone-total-time', totalActiveTime.toString());
+        }
+        
+        function formatDuration(milliseconds) {
+            const seconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes % 60}m`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds % 60}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+        
+        function updateUsageDisplay() {
+            const pageLoads = parseInt(localStorage.getItem('timezone-page-loads') || '0');
+            const currentSessionTime = isPageVisible ? (Date.now() - visibilityStartTime) : 0;
+            const displayTime = totalActiveTime + currentSessionTime;
+            
+            const usageElement = document.getElementById('usage-stats');
+            if (usageElement) {
+                usageElement.textContent = `Used ${pageLoads} times • Active for ${formatDuration(displayTime)}`;
+            }
+        }
+
+        // Theme management
+        let currentTheme = 'dark'; // Start with dark mode as default
+        
+        function toggleTheme() {
+            const body = document.body;
+            const themeButton = document.getElementById('theme-toggle');
+            
+            // Cycle through themes: dark -> light -> blue -> dark
+            switch(currentTheme) {
+                case 'dark':
+                    currentTheme = 'light';
+                    body.className = 'light-mode';
+                    themeButton.textContent = '☀️';
+                    break;
+                case 'light':
+                    currentTheme = 'blue';
+                    body.className = 'blue-mode';
+                    themeButton.textContent = '🌙';
+                    break;
+                case 'blue':
+                    currentTheme = 'dark';
+                    body.className = '';
+                    themeButton.textContent = '🌛';
+                    break;
+            }
+            
+            console.log('Theme changed to:', currentTheme);
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            
+            // Reset classes
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            // Add error class if needed
+            if (isError) {
+                notification.classList.add('error');
+            }
+            
+            // Show with animation
+            notification.classList.add('show');
+            
+            console.log('Showing notification:', message); // Debug
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.classList.add('hide');
+                
+                // Remove from DOM after animation completes
+                setTimeout(() => {
+                    notification.classList.remove('hide');
+                }, 500);
+            }, 5000);
+        }
+
+        function shareToTwitter() {
+            console.log('Share function called, current theme:', currentTheme);
+            
+            // Show immediate feedback that sharing process started
+            showNotification('📸 Creating screenshot...', false);
+            
+            // Temporarily modify the actual page to match theme, then capture
+            const body = document.body;
+            const container = document.querySelector('.container');
+            
+            // Save original styles
+            const originalBodyClass = body.className;
+            const originalContainerStyle = container.style.cssText;
+            
+            // Apply theme to actual page elements
+            switch(currentTheme) {
+                case 'light':
+                    body.className = 'light-mode';
+                    break;
+                case 'blue':
+                    body.className = 'blue-mode';
+                    break;
+                case 'dark':
+                default:
+                    body.className = '';
+            }
+            
+            // Override container styles for clean capture
+            container.style.background = 'transparent';
+            container.style.border = 'none';
+            container.style.boxShadow = 'none';
+            container.style.backdropFilter = 'none';
+            
+            // Force reflow
+            container.offsetHeight;
+            
+            console.log('Applied theme, capturing container...');
+            
+            // Capture the actual container with theme applied
+            html2canvas(container, {
+                useCORS: true,
+                allowTaint: true,
+                scale: 2,
+                logging: false,
+                backgroundColor: currentTheme === 'light' ? '#74b9ff' : 
+                               currentTheme === 'blue' ? '#1e3c72' : '#2d3436'
+            }).then(canvas => {
+                // Restore original styles immediately
+                body.className = originalBodyClass;
+                container.style.cssText = originalContainerStyle;
+                
+                console.log('Canvas captured, theme restored');
+                
+                // Convert canvas to blob
+                canvas.toBlob(function(blob) {
+                    // Copy image to clipboard
+                    navigator.clipboard.write([
+                        new ClipboardItem({
+                            'image/png': blob
+                        })
+                    ]).then(() => {
+                        console.log('Image copied to clipboard with theme:', currentTheme);
+                        
+                        // Show success notification
+                        showNotification('✅ Image copied to clipboard! Paste it in your tweet (Ctrl+V or Cmd+V)');
+                        
+                        // Create tweet message with timezone info
+                        const currentPDTFormatted = formatTime(currentPDTTime);
+                        const currentDate = formatDate(currentPDTTime);
+                        const tweetText = `🌍 Timezone Check: ${currentPDTFormatted} PDT on ${currentDate}\n\nCheck out this timezone converter! 🕐\n\n#timezone #worldclock #timeconverter`;
+                        
+                        // Open Twitter composer with pre-filled text
+                        const twitterUrl = `https://x.com/compose/tweet?text=${encodeURIComponent(tweetText)}`;
+                        window.open(twitterUrl, '_blank');
+                    }).catch(err => {
+                        console.error('Failed to copy to clipboard:', err);
+                        
+                        // Show error notification
+                        showNotification('❌ Failed to copy image to clipboard. Try the share again.', true);
+                        
+                        // Create tweet message even if clipboard failed
+                        const currentPDTFormatted = formatTime(currentPDTTime);
+                        const currentDate = formatDate(currentPDTTime);
+                        const tweetText = `🌍 Timezone Check: ${currentPDTFormatted} PDT on ${currentDate}\n\nCheck out this timezone converter! 🕐\n\n#timezone #worldclock #timeconverter`;
+                        
+                        // Open Twitter composer with pre-filled text
+                        const twitterUrl = `https://x.com/compose/tweet?text=${encodeURIComponent(tweetText)}`;
+                        window.open(twitterUrl, '_blank');
+                    });
+                });
+            }).catch(err => {
+                // Restore original styles on error
+                body.className = originalBodyClass;
+                container.style.cssText = originalContainerStyle;
+                console.error('Screenshot failed:', err);
+                
+                // Show error notification
+                showNotification('❌ Screenshot failed. Please try again.', true);
+                
+                // Fallback: just open Twitter
+                window.open('https://x.com/compose/tweet', '_blank');
+            });
+        }
+
+        function showHelp() {
+            const modal = document.getElementById('help-modal');
+            modal.style.display = 'flex';
+            console.log('Help modal opened');
+        }
+
+        function closeHelp() {
+            const modal = document.getElementById('help-modal');
+            modal.style.display = 'none';
+            console.log('Help modal closed');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const helpModal = document.getElementById('help-modal');
+            const settingsModal = document.getElementById('settings-modal');
+            
+            if (event.target === helpModal) {
+                closeHelp();
+            }
+            if (event.target === settingsModal) {
+                closeSettings();
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeHelp();
+                closeSettings();
+            }
+        });
+
+        function tryExample(queryString) {
+            console.log('Trying example:', queryString);
+            
+            // Close the help modal first
+            closeHelp();
+            
+            // Reload the page with the example query string
+            const currentUrl = window.location.href.split('?')[0]; // Remove existing query params
+            const newUrl = currentUrl + queryString;
+            
+            console.log('Navigating to:', newUrl);
+            window.location.href = newUrl;
+        }
+
+        // Function to parse URL parameters
+        function getURLParameters() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const dateParam = urlParams.get('date');
+                const timeParam = urlParams.get('time');
+                
+                console.log('URL Params:', { date: dateParam, time: timeParam }); // Debug log
+                
+                // If only time is provided, use today's date
+                if (timeParam && !dateParam) {
+                    const today = new Date();
+                    const todayString = `${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}-${today.getFullYear()}`;
+                    console.log('Using today\'s date:', todayString);
+                    const parsed = parseDateTime(todayString, timeParam);
+                    console.log('Parsed DateTime with today:', parsed);
+                    return parsed;
+                }
+                
+                // If both date and time are provided
+                if (dateParam && timeParam) {
+                    const parsed = parseDateTime(dateParam, timeParam);
+                    console.log('Parsed DateTime:', parsed); // Debug log
+                    return parsed;
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('Error parsing URL parameters:', e);
+                return null;
+            }
+        }
+
+        // Function to parse date and time from URL parameters
+        function parseDateTime(dateStr, timeStr) {
+            try {
+                console.log('Parsing:', { dateStr, timeStr }); // Debug log
+                
+                // Parse date (format: MM-DD-YYYY or MM/DD/YYYY)
+                const datePattern = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/;
+                const dateMatch = dateStr.match(datePattern);
+                
+                if (!dateMatch) {
+                    console.log('Date pattern failed');
+                    return null;
+                }
+                
+                const month = parseInt(dateMatch[1]) - 1; // Month is 0-indexed
+                const day = parseInt(dateMatch[2]);
+                const year = parseInt(dateMatch[3]);
+                
+                // Parse time - handle multiple formats: "9am", "9:30pm", "9:00 AM", etc.
+                const timePattern = /^(\d{1,2})(?::(\d{2}))?\s?(AM|PM)$/i;
+                const timeMatch = timeStr.match(timePattern);
+                
+                if (!timeMatch) {
+                    console.log('Time pattern failed for:', timeStr);
+                    return null;
+                }
+                
+                let hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2] || '0'); // Default to 0 if no minutes provided
+                const ampm = timeMatch[3].toUpperCase();
+                
+                // Validate ranges
+                if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+                    console.log('Time validation failed');
+                    return null;
+                }
+                
+                // Convert to 24-hour format
+                if (ampm === 'AM' && hours === 12) {
+                    hours = 0;
+                } else if (ampm === 'PM' && hours !== 12) {
+                    hours += 12;
+                }
+                
+                const result = new Date(year, month, day, hours, minutes, 0, 0);
+                console.log('Successfully parsed:', result);
+                return result;
+            } catch (e) {
+                console.error('Parse error:', e);
+                return null;
+            }
+        }
+
+        // Initialize current PDT time - start with current time by default
+        let currentPDTTime = new Date();
+        let isLiveMode = true; // Track if we should auto-update
+        let updateInterval;
+        
+        function initializeTime() {
+            const urlTime = getURLParameters();
+            if (urlTime) {
+                currentPDTTime = new Date(urlTime);
+                isLiveMode = false; // Stop auto-updates when URL time is provided
+                console.log('Using URL time:', currentPDTTime);
+            } else {
+                currentPDTTime = new Date(); // Use actual current time
+                isLiveMode = true; // Enable auto-updates
+                console.log('Using current time:', currentPDTTime);
+                startAutoUpdate();
+            }
+            
+            // Debug the initial time
+            console.log('INITIALIZE - currentPDTTime:', currentPDTTime.toString());
+            console.log('INITIALIZE - getTime():', currentPDTTime.getTime());
+            console.log('INITIALIZE - getHours():', currentPDTTime.getHours());
+            
+            updateLiveIndicator();
+        }
+
+        function updateLiveIndicator() {
+            const mainZone = document.querySelector('.main-zone');
+            if (isLiveMode) {
+                mainZone.classList.add('live-mode');
+                console.log('Live mode indicator: ON');
+            } else {
+                mainZone.classList.remove('live-mode');
+                console.log('Live mode indicator: OFF');
+            }
+        }
+
+        function startAutoUpdate() {
+            if (updateInterval) clearInterval(updateInterval);
+            
+            if (isLiveMode) {
+                updateInterval = setInterval(() => {
+                    if (isLiveMode) {
+                        // Create a fresh Date object to avoid any corruption
+                        currentPDTTime = new Date();
+                        console.log('Auto-updated to fresh date:', currentPDTTime.toString());
+                        updateAllTimes();
+                        console.log('Auto-updated to:', formatTime(currentPDTTime));
+                    }
+                }, 60000); // Update every minute (60000ms)
+                console.log('Auto-update started');
+                updateLiveIndicator();
+            }
+        }
+
+        function stopAutoUpdate() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            isLiveMode = false;
+            updateLiveIndicator();
+        }
+
+        function formatTime(date) {
+            // Fix: If we receive a number (timestamp), convert it to Date
+            if (typeof date === 'number') {
+                console.log('formatTime received timestamp, converting:', date);
+                date = new Date(date);
+            }
+            
+            // Add comprehensive validation and debugging
+            console.log('formatTime called with:', date);
+            console.log('Date type:', typeof date);
+            
+            if (!date || typeof date !== 'object' || isNaN(date.getTime())) {
+                console.error('Invalid date passed to formatTime:', date);
+                return '12:00 AM';
+            }
+            
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            
+            console.log('Raw hours:', hours, 'Raw minutes:', minutes);
+            
+            // Validate hours and minutes are in normal range
+            if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+                console.error('Invalid hours/minutes:', hours, minutes);
+                console.error('Date object details:', {
+                    getTime: date.getTime(),
+                    getFullYear: date.getFullYear(),
+                    getMonth: date.getMonth(),
+                    getDate: date.getDate()
+                });
+                return '12:00 AM';
+            }
+            
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            
+            const result = hours + ':' + minutes + ' ' + ampm;
+            console.log('formatTime result:', result);
+            return result;
+        }
+
+        function formatDate(date) {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' + date.getDate();
+        }
+
+        function updateAllTimes() {
+            // Fixed timezones
+            // PDT (base time)
+            document.getElementById('pdt-time').textContent = formatTime(currentPDTTime);
+            document.getElementById('pdt-date').textContent = formatDate(currentPDTTime);
+
+            // EDT (PDT + 3 hours)
+            const edtTime = new Date(currentPDTTime.getTime() + 3 * 60 * 60 * 1000);
+            document.getElementById('edt-time').textContent = formatTime(edtTime);
+            document.getElementById('edt-date').textContent = formatDate(edtTime);
+
+            // Dynamic bottom countries
+            selectedBottomCountries.forEach(code => {
+                const country = COUNTRIES.find(c => c.code === code);
+                if (!country) return;
+                
+                // Calculate time for this country (offset from PDT)
+                const offsetDiff = country.offset - FIXED_TIMEZONES.PDT.offset;
+                const countryTime = new Date(currentPDTTime.getTime() + offsetDiff * 60 * 60 * 1000);
+                
+                const timeElement = document.getElementById(`${country.code}-time`);
+                const dateElement = document.getElementById(`${country.code}-date`);
+                
+                if (timeElement && dateElement) {
+                    timeElement.textContent = formatTime(countryTime);
+                    dateElement.textContent = formatDate(countryTime);
+                }
+            });
+        }
+
+        function editTime(element) {
+            const currentText = element.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'time-input';
+            input.value = currentText;
+            input.placeholder = 'h:mm AM/PM';
+            
+            element.replaceWith(input);
+            input.focus();
+            input.select();
+            
+            function saveTime() {
+                const timeValue = input.value.trim();
+                if (validateAndSetTime(timeValue)) {
+                    const newElement = document.createElement('div');
+                    newElement.className = 'time-display';
+                    newElement.id = 'pdt-time';
+                    newElement.onclick = () => editTime(newElement);
+                    newElement.textContent = formatTime(currentPDTTime);
+                    input.replaceWith(newElement);
+                    updateAllTimes();
+                } else {
+                    alert('Please enter time in format: h:mm AM/PM (e.g., 6:30 PM, 12:00 AM)');
+                    input.focus();
+                    input.select();
+                }
+            }
+            
+            input.addEventListener('blur', saveTime);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveTime();
+                }
+                if (e.key === 'Escape') {
+                    const newElement = document.createElement('div');
+                    newElement.className = 'time-display';
+                    newElement.id = 'pdt-time';
+                    newElement.onclick = () => editTime(newElement);
+                    newElement.textContent = currentText;
+                    input.replaceWith(newElement);
+                }
+            });
+        }
+
+        function validateAndSetTime(timeString) {
+            stopAutoUpdate(); // Stop auto-updates when user manually edits time
+            
+            // Match format like "6:30 PM", "12:00 AM", etc.
+            const timePattern = /^(\d{1,2}):(\d{2})\s?(AM|PM)$/i;
+            const match = timeString.match(timePattern);
+            
+            if (!match) return false;
+            
+            let hours = parseInt(match[1]);
+            let minutes = parseInt(match[2]);
+            const ampm = match[3].toUpperCase();
+            
+            // Validate ranges
+            if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+                return false;
+            }
+            
+            // Convert to 24-hour format
+            if (ampm === 'AM' && hours === 12) {
+                hours = 0;
+            } else if (ampm === 'PM' && hours !== 12) {
+                hours += 12;
+            }
+            
+            // Update the current PDT time while keeping the same date
+            currentPDTTime.setHours(hours, minutes, 0, 0);
+            return true;
+        }
+
+        function incrementTime() {
+            stopAutoUpdate(); // Stop auto-updates when user manually changes time
+            console.log('INCREMENT called - current time:', formatTime(currentPDTTime));
+            
+            // Round to next 5-minute increment
+            const currentMinutes = currentPDTTime.getMinutes();
+            const nextFiveMinIncrement = Math.ceil(currentMinutes / 5) * 5;
+            
+            // If already on a 5-min increment, go to next one
+            const targetMinutes = (currentMinutes % 5 === 0) ? currentMinutes + 5 : nextFiveMinIncrement;
+            
+            console.log('Current minutes:', currentMinutes, 'Target:', targetMinutes);
+            
+            // Create new date to avoid reference issues
+            const newTime = new Date(currentPDTTime);
+            newTime.setMinutes(targetMinutes);
+            currentPDTTime = newTime;
+            
+            console.log('After increment:', formatTime(currentPDTTime));
+            updateAllTimes();
+        }
+
+        function decrementTime() {
+            stopAutoUpdate(); // Stop auto-updates when user manually changes time
+            console.log('DECREMENT called - current time:', formatTime(currentPDTTime));
+            
+            // Round to previous 5-minute increment
+            const currentMinutes = currentPDTTime.getMinutes();
+            const prevFiveMinIncrement = Math.floor(currentMinutes / 5) * 5;
+            
+            // If already on a 5-min increment, go to previous one
+            const targetMinutes = (currentMinutes % 5 === 0) ? currentMinutes - 5 : prevFiveMinIncrement;
+            
+            console.log('Current minutes:', currentMinutes, 'Target:', targetMinutes);
+            
+            // Create new date to avoid reference issues
+            const newTime = new Date(currentPDTTime);
+            newTime.setMinutes(targetMinutes);
+            currentPDTTime = newTime;
+            
+            console.log('After decrement:', formatTime(currentPDTTime));
+            updateAllTimes();
+        }
+
+        function resetToCurrentTime() {
+            stopAutoUpdate(); // Stop existing timer
+            
+            // Create a completely fresh Date object
+            currentPDTTime = new Date();
+            
+            console.log('RESET - Fresh date created:', currentPDTTime.toString());
+            console.log('RESET - Date getTime():', currentPDTTime.getTime());
+            console.log('RESET - Date getHours():', currentPDTTime.getHours());
+            console.log('RESET - Date getMinutes():', currentPDTTime.getMinutes());
+            
+            isLiveMode = true; // Re-enable auto-updates
+            console.log('Reset to current time:', currentPDTTime);
+            console.log('Live mode enabled:', isLiveMode);
+            updateAllTimes();
+            startAutoUpdate(); // Restart auto-updates
+        }
+
+        // Initialize the display when DOM is ready
+        function initialize() {
+            // Set current year in copyright
+            const currentYear = new Date().getFullYear();
+            document.getElementById('current-year').textContent = currentYear;
+            console.log('Copyright year set to:', currentYear);
+            
+            // Initialize usage tracking
+            initializeUsageTracking();
+            
+            // Load selected countries
+            loadSelectedCountries();
+            
+            // Render bottom countries
+            renderBottomCountries();
+            
+            // Initialize time
+            initializeTime();
+            updateAllTimes();
+        }
+        
+        document.addEventListener('DOMContentLoaded', initialize);
+        
+        // Fallback for if DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // DOM not ready yet, listener will handle it
+        } else {
+            // DOM is ready, initialize now
+            initialize();
+        }
+    </script>
+</body>
+</html>
